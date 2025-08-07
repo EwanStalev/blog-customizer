@@ -2,7 +2,7 @@ import { ArrowButton } from 'src/ui/arrow-button';
 import { Button } from 'src/ui/button';
 import clsx from 'clsx';
 import styles from './ArticleParamsForm.module.scss';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Text } from 'src/ui/text';
 import { Select } from 'src/ui/select';
 import { RadioGroup } from 'src/ui/radio-group';
@@ -17,6 +17,7 @@ import {
 	OptionType,
 } from 'src/constants/articleProps';
 import { Separator } from 'src/ui/separator';
+import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
 
 type Props = {
 	onSubmit: (settings: ArticleStateType) => void;
@@ -27,8 +28,14 @@ type ArticleKey = keyof ArticleStateType;
 export const ArticleParamsForm = ({ onSubmit, onReset }: Props) => {
 	const [articleState, setArticleState] =
 		useState<ArticleStateType>(defaultArticleState);
+	const rootRef = useRef<HTMLDivElement>(null);
 
 	const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
+	useOutsideClickClose({
+		isOpen: isFormOpen,
+		rootRef,
+		onChange: setIsFormOpen,
+	});
 	function handleChange(name: ArticleKey, value: OptionType) {
 		setArticleState((prev) => ({ ...prev, [name]: value }));
 	}
@@ -41,7 +48,10 @@ export const ArticleParamsForm = ({ onSubmit, onReset }: Props) => {
 				}}
 			/>
 			<aside
-				className={clsx(styles.container, isFormOpen && styles.container_open)}>
+				ref={rootRef}
+				className={clsx(styles.container, {
+					[styles.container_open]: isFormOpen,
+				})}>
 				<form
 					className={styles.form}
 					onSubmit={(event) => {
